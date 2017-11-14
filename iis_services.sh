@@ -1,6 +1,6 @@
 #!/bin/bash
 
-P_SOURCE_VERSION="V1.38"
+P_SOURCE_VERSION="V1.43"
 
 
 LOGFILE=$HOME/iis_services.log
@@ -14,14 +14,9 @@ SCRIPTNAME=`basename $0`
 # path where to write the PIDFILE
 PIDFILE=/tmp/$SCRIPTNAME.pid
 
-
 #
 # Funktions-Definitionen
 #
-
-
-
-
 log()
 {
  echo " " | tee -a $LOGFILE
@@ -33,10 +28,6 @@ log()
  echo " " | tee -a $LOGFILE
  echo " " | tee -a $LOGFILE
 }  
-
-
-
-
 
 
 check_rc()
@@ -53,9 +44,6 @@ check_rc()
 }
 
 
-
-
-
 abbruch()
 {
  echo " " | tee -a $LOGFILE
@@ -67,15 +55,13 @@ abbruch()
 }
 
 
-
-
-
-
-
 set_environment()
 {
  P_HOSTNAME=`hostname`
  P_LAST_CHARACTER_OF_HOSTNAME=`echo $P_HOSTNAME | grep -o '.$'`
+ # wenn man vom UC4 kommt wird ORACLE_HOME (fuer SQL*Plus) nicht gesetzt
+ export ORACLE_HOME=/ORACLE/u01/app/oracle/product/client/client11g 
+ export PATH=$PATH:$ORACLE_HOME/bin
  case $P_LAST_CHARACTER_OF_HOSTNAME in
     e) P_MASCHINE=dldesd01
        P_FOLDER=dev
@@ -105,13 +91,6 @@ set_environment()
 
 
 
-
-
-
-
-
-
-
 stop_daemon()
 {
  P_WHAT="Stop_DataStage_daemon" 
@@ -121,6 +100,7 @@ stop_daemon()
  bin/uv -admin -stop | tee -a $LOGFILE
  check_rc $P_WHAT
 }  
+
 
 start_daemon()
 {
@@ -138,10 +118,6 @@ start_daemon()
 }  
 
 
-
-
-
-
 stop_agent()
 {
  P_WHAT="Stop_Node_agent" 
@@ -151,6 +127,7 @@ stop_agent()
  check_rc $P_WHAT
 }  
 
+
 start_agent()
 {
  P_WHAT="Start_Node_agent" 
@@ -158,11 +135,7 @@ start_agent()
  cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/ASBNode/bin
  ./NodeAgents.sh start | tee -a $LOGFILE
  check_rc $P_WHAT
-}  
-
-
-
-
+}
 
 
 stop_server1()
@@ -182,6 +155,10 @@ start_server1()
  ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE "cd /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/bin ; ./startServer.sh server1"
  check_rc $P_WHAT
 }  
+
+
+
+
 
 
 
@@ -242,9 +219,6 @@ housekeeping()
    find . -name 'SH*'            -type f -delete;
    find . -name 'COPY*'          -type f -delete;
  done
-
-
-
  
  
  # pmr-Ordner aelter 30 Tage loeschen
@@ -314,9 +288,6 @@ housekeeping()
  ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE "cd /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere ; find . -name 'Snap20*.trc'     -mtime +3 -type f -delete;"
  
 
-
-
-
  #
  # alle Datasets aelter 5 Tage loeschen
  # 1. Header (Binaerfiles werden mit orchadmin automatisch mit geloescht)
@@ -339,16 +310,16 @@ housekeeping()
  #
  cd /APPL/Scratch
  find . -name "dynLUT*" -type f -exec rm {} \;
+ find . -name "machineLog*" -type f -exec rm {} \;
  find . -name "xml-log-dir" -type d -exec rm –r {} \;
-
-
-
-
+ find . -name "aptSo*" -type f -exec rm {} \;
+ find . -name "resource_tracker.*" -type f -exec rm {} \;
 
 
 
  echo "Ende  Housekeeping `date +'%d.%m.%Y %H:%M'`" | tee -a $LOGFILE
 }  
+
 
 
 
@@ -417,6 +388,11 @@ stop()
  remove_pid_file
 }  
 
+
+
+
+
+
 start()
 {
  pid_file 'START'
@@ -428,6 +404,12 @@ start()
  remove_pid_file
  clear_big_rt_log_folders
 }  
+
+
+
+
+
+
 
 restart()
 {
@@ -442,35 +424,53 @@ restart()
 
 
 
+# 26.09.2017    - V.Poliakov Erweiterung (pmr "report")
+#                 die check_status() Funktion von David Rahman
+#                 wurde nach der Absprache mit Roman Penz deaktiviert.
+#                 Die check_status() Funktion macht das gleiche, wie 
+#                 status() Funktion plus Email versenden. Aus diesem
+#                 Grund wird die status() Funktion um den Parameter "report"
+#                 erweitert.
 status()
 {
- P_ANZAHL=`ps -ef | grep dsrpcd | grep -v grep | wc -l`
- if test $P_ANZAHL -eq 1
+ P_ANZAHL_DS=`ps -ef | grep dsrpcd | grep -v grep | wc -l`
+ if test $P_ANZAHL_DS -eq 1
   then echo "DataStage daemon (dsrpcd)   - up" | tee -a $LOGFILE
   else echo "DataStage daemon (dsrpcd)   - down" | tee -a $LOGFILE
  fi
- P_ANZAHL=`ps -ef | grep asbagent | grep -v grep | wc -l`
- if test $P_ANZAHL -eq 1
+ P_ANZAHL_ASB=`ps -ef | grep asbagent | grep -v grep | wc -l`
+ if test $P_ANZAHL_ASB -eq 1
   then echo "Node agent       (asbagent) - up" | tee -a $LOGFILE
   else echo "Node agenti      (asbagent) - down" | tee -a $LOGFILE
  fi
- P_ANZAHL=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE ps -ef | grep server1 | grep -v grep | wc -l`
- case $P_ANZAHL in
+ P_ANZAHL_SER=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE ps -ef | grep server1 | grep -v grep | wc -l`
+ case $P_ANZAHL_SER in
     0) echo "Metadata Server  (server1)  - down" | tee -a $LOGFILE ;;
     1) echo "Metadata Server  (server1)  - up" | tee -a $LOGFILE ;;
     *) echo "Metadata Server  (server1   - undefined" | tee -a $LOGFILE ;;
  esac 
 
- check_infint_db | tee -a $LOGFILE
-
+ P_INFINTDB=$(check_infint_db)
+ echo "$P_INFINTDB" | tee -a $LOGFILE
+ 
+ # 1 = The process is running
+ # 2 = The process is not running
+ # 3 = Monitoring is not enabled
  cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/bin
  ./DSAppWatcher.sh -status | tee -a $LOGFILE
+ P_ST_AppWatcher=`./DSAppWatcher.sh -status AppWatcher`
+ P_ST_EngMonApp=`./DSAppWatcher.sh -status EngMonApp`
+ P_ST_ResMonApp=`./DSAppWatcher.sh -status ResMonApp`
+ P_ST_ODBQueryApp=`./DSAppWatcher.sh -status ODBQueryApp`
+ 
+ # wird nicht überwacht
+ # 1 = deamon is not running
+ #cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSOMD/bin
+ #./DSOMDMonApp.sh -status | tee -a $LOGFILE
+ #P_ST_SOMDMonApp=`./DSOMDMonApp.sh -status`
 
- cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSOMD/bin
- ./DSOMDMonApp.sh -status | tee -a $LOGFILE
-
- P_ANZAHL=`ps -ef | grep defunct | grep -v grep | wc -l`
- echo "Count Zombies              = " $P_ANZAHL | tee -a $LOGFILE
+ P_ANZAHL_ZOMBIES=`ps -ef | grep defunct | grep -v grep | wc -l`
+ echo "Count Zombies              = " $P_ANZAHL_ZOMBIES | tee -a $LOGFILE
  P_ANZAHL_OSH=`ps -ef | grep osh | grep -v grep | wc -l`
  echo "Count osh-Processes        = " $P_ANZAHL_OSH | tee -a $LOGFILE
  P_ANZAHL_DSD=`ps -ef | grep DSD | grep -v grep | wc -l`
@@ -483,19 +483,21 @@ status()
  P_ANZAHL_FWK=`ps -ef | grep fwk | grep -v grep | wc -l`
  echo "Count fwk-Skripte          = " $P_ANZAHL_FWK | tee -a $LOGFILE
 
- P_SIZE=$(df -h /APPL | grep /APPL | awk '{print $1}')
- P_AVAIL=$(df -h /APPL | grep /APPL | awk '{print $3}')
- P_USEpercent=$(df -h /APPL | grep /APPL | awk '{print $4}')
- echo "Engine-Tier:  /APPL      $P_AVAIL von $P_SIZE frei. $P_USEpercent benutzt." | tee -a $LOGFILE
- P_SIZE=$(df -h /APPL/data | grep /APPL | awk '{print $1}')
- P_AVAIL=$(df -h /APPL/data | grep /APPL | awk '{print $3}')
- P_USEpercent=$(df -h /APPL/data | grep /APPL | awk '{print $4}')
- echo "              /APPL/data $P_AVAIL von $P_SIZE frei. $P_USEpercent benutzt." | tee -a $LOGFILE
- P_SIZE=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print $1}'`
- P_AVAIL=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print $3}'`
- P_USEpercent=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print $4}'`
- echo "Service-Tier: /APPL      $P_AVAIL von $P_SIZE frei. $P_USEpercent benutzt." | tee -a $LOGFILE
+ P_SIZE_ENGINE_APPL=$(df -h /APPL | grep /APPL | awk '{print $1}')
+ P_AVAIL_ENGINE_APPL=$(df -h /APPL | grep /APPL | awk '{print $3}')
+ P_USEpercent_ENGINE_APPL=$(df -h /APPL | grep /APPL | awk '{print substr($4, 1, length($4)-1)}')
+ echo "Engine-Tier:  /APPL      $P_AVAIL_ENGINE_APPL von $P_SIZE_ENGINE_APPL frei. $P_USEpercent_ENGINE_APPL% benutzt." | tee -a $LOGFILE
+ P_SIZE_ENGINE_APPL_DATA=$(df -h /APPL/data | grep /APPL | awk '{print $1}')
+ P_AVAIL_ENGINE_APPL_DATA=$(df -h /APPL/data | grep /APPL | awk '{print $3}')
+ P_USEpercent_ENGINE_APPL_DATA=$(df -h /APPL/data | grep /APPL | awk '{print substr($4, 1, length($4)-1)}')
+ echo "              /APPL/data $P_AVAIL_ENGINE_APPL_DATA von $P_SIZE_ENGINE_APPL_DATA frei. $P_USEpercent_ENGINE_APPL_DATA% benutzt." | tee -a $LOGFILE
+ P_SIZE_SERVICE_APPL=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print $1}'`
+ P_AVAIL_SERVICE_APPL=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print $3}'`
+ P_USEpercent_SERVICE=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print substr($4, 1, length($4)-1)}'`
+ echo "Service-Tier: /APPL      $P_AVAIL_SERVICE_APPL von $P_SIZE_SERVICE_APPL frei. $P_USEpercent_SERVICE% benutzt." | tee -a $LOGFILE 
  
+ P_FREE=`free -gt | grep Total | awk '{print $4}'`
+ P_SWAP_FREE=`free -mt | grep Swap | awk '{print $4}'`
  P_Memtotal=$(free -h | grep "Mem:" | awk '{print $2}')
  P_Memfree=$(free -h | grep "Mem:" | awk '{print $4}')
  P_Swaptotal=$(free -h | grep "Swap:" | awk '{print $2}')
@@ -506,98 +508,101 @@ status()
  P_Swaptotal=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE free -h | grep "Swap:" | awk '{print $2}'`
  P_Swapfree=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE free -h | grep "Swap:" | awk '{print $4}'`
  echo "Service-Tier: $P_Memfree von $P_Memtotal Memory frei - $P_Swapfree von $P_Swaptotal Swap frei." | tee -a $LOGFILE
+ 
+ # check if REPORT Option is set
+ if [[ $1 = "report" ]]
+   then
+     echo "REPORT-OPTION is set" | tee -a $LOGFILE
+     # echo "$P_ANZAHL_DS / $P_ANZAHL_ASB / $P_ANZAHL_SER / $P_USEpercent_ENGINE_APPL / $P_USEpercent_ENGINE_APPL_DATA / $P_USEpercent_SERVICE / $P_ST_AppWatcher / $P_ST_EngMonApp / $P_ST_ResMonApp / $P_ST_ODBQueryApp / $P_ANZAHL_ZOMBIES / $P_FREE / $P_SWAP_FREE / $P_INFINTDB"
+     if [[ $P_ANZAHL_DS -eq 0 ]] || [[ $P_ANZAHL_ASB -eq 0 ]] || [[ $P_ANZAHL_SER -ne 1 ]] || [[ $P_USEpercent_ENGINE_APPL -gt 95 ]] || [[ $P_USEpercent_ENGINE_APPL_DATA -gt 95 ]] || [[ $P_USEpercent_SERVICE -gt 95 ]] || [[ $P_ST_AppWatcher == "AppWatcher:STOPPED" ]] || [[ $P_ST_EngMonApp == "EngMonApp:STOPPED" ]] || [[ $P_ST_ResMonApp == "ResMonApp:STOPPED" ]] || [[ $P_ST_ODBQueryApp == "ODBQueryApp:STOPPED" ]] || [[ $P_ANZAHL_ZOMBIES -gt 400 ]] || [[ $P_FREE -lt 1 ]] || [[ $P_SWAP_FREE -lt 1024 ]] || [[ $P_INFINTDB =~ "down" ]]
+       then 
+         echo "Check Status done. The Email will be sent to SP_ITBCC-WAREHOUSING@ing-diba.de" | tee -a $LOGFILE
+         pmr "report"
+       else
+         echo "Check Status done. Nothing to do." | tee -a $LOGFILE
+     fi
+ fi 
 }  
 
-# erste Fassung
-check_status()
-{
-  P_ANZAHL_DS=`ps -ef | grep dsrpcd | grep -v grep | wc -l`
-  P_ANZAHL_ASB=`ps -ef | grep asbagent | grep -v grep | wc -l`
-  P_ANZAHL_SER=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE ps -ef | grep server1 | grep -v grep | wc -l`
- 
-  ## TODO
-  #P_INFINT_DB=check_infint_db
-  #echo "INFINTDB: ${P_INFINT_DB}"
-  #[[ P_INFINT_DB = "force" ]]
-  
-  
-  # 1 = The process is running
-  # 2 = The process is not running
-  # 3 = Monitoring is not enabled
-  cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/bin
-  P_ST_AppWatcher=`./DSAppWatcher.sh -status AppWatcher`
-  P_ST_EngMonApp=`./DSAppWatcher.sh -status EngMonApp`
-  P_ST_ResMonApp=`./DSAppWatcher.sh -status ResMonApp`
-  P_ST_ODBQueryApp=`./DSAppWatcher.sh -status ODBQueryApp`
- 
-  # wird nicht überwacht
-  # 1 = deamon is not running
-  #cd /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSOMD/bin
-  #P_ST_SOMDMonApp=`./DSOMDMonApp.sh -status`
 
-  cd $HOME
-  
-  P_USEpercent_ENGINE_APPL=$(df -h /APPL | grep /APPL | awk '{print substr($4, 1, length($4)-1)}')
-  P_USEpercent_ENGINE_APPL_DATA=$(df -h /APPL/data | grep /APPL | awk '{print substr($4, 1, length($4)-1)}')
-  P_USEpercent_SERVICE=`ssh -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE df -h /APPL | grep /APPL | awk '{print substr($4, 1, length($4)-1)}'`
-  
 
-  if [[ $P_ANZAHL_DS -eq 0 ]] || [[ $P_ANZAHL_ASB -eq 0 ]] || [[ $P_ANZAHL_SER -ne 1 ]] || [[ $P_USEpercent_ENGINE_APPL -gt 95 ]] || [[ $P_USEpercent_ENGINE_APPL_DATA -gt 95 ]] || [[ $P_USEpercent_SERVICE -gt 95 ]] || [[ $P_ST_AppWatcher == "AppWatcher:STOPPED" ]] || [[ $P_ST_EngMonApp == "EngMonApp:STOPPED" ]] || [[ $P_ST_ResMonApp == "ResMonApp:STOPPED" ]] || [[ $P_ST_ODBQueryApp == "ODBQueryApp:STOPPED" ]] # || [[ $P_ST_SOMDMonApp == "DSOMDMonApp:NOT_RUNNING" ]]
-    then 
-      pmr "report"
-  fi
-  
-}
+
+
 
 pmr()
 {
- P_DIR="$HOME/pmr_`date +'%Y%m%d_%H%M'`"
- mkdir -p $P_DIR
- cd $P_DIR
- cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Version.xml Version_Engine_Tier.xml
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Version.xml Version_Service_Tier.xml
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/igc.log igc.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/SystemOut.log SystemOut.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/SystemErr.log SystemErr.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/startServer.log startServer.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/stopServer.log stopServer.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/native_stdout.log native_stdout.log
- scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/native_stderr.log native_stderr.log
+  P_HOSTNAME=`hostname`
+  P_LAST_CHARACTER_OF_HOSTNAME=`echo $P_HOSTNAME | grep -o '.$'`
+  case $P_LAST_CHARACTER_OF_HOSTNAME in
+    e) P_ENVIRONMENT=DEV ;;       
+    t) P_ENVIRONMENT=TEST ;;       
+    v) P_ENVIRONMENT=QA ;;       
+    p) P_ENVIRONMENT=PROD ;;       
+    m) P_ENVIRONMENT=MAINTENANCE ;;       
+  esac
 
- mkdir -p ASBNode_logs
- cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/ASBNode/logs/asb-agent-*.out ASBNode_logs/.
- mkdir -p DSODB_logs
- cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/logs/* DSODB_logs/. 
 
- cp ~/istool_workspace/.metadata/.log local_log_file.log
+  P_DIR="$HOME/pmr_`date +'%Y%m%d_%H%M'`"
+  mkdir -p $P_DIR
+  cd $P_DIR
+  cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Version.xml Version_Engine_Tier.xml
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Version.xml Version_Service_Tier.xml
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/igc.log igc.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/SystemOut.log SystemOut.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/SystemErr.log SystemErr.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/startServer.log startServer.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/stopServer.log stopServer.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/native_stdout.log native_stdout.log
+  scp -q -i $HOME/.ssh/sshkey_rsa_private iisadmin@$P_MASCHINE:/APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1/native_stderr.log native_stderr.log 
 
- echo "Version_Engine_Tier.xml  (Original Version.xml)    from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer" >>readme.txt
- echo "Version_Service_Tier.xml (Original Version.xml)    from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer" >>readme.txt
- echo "igc.log                                            from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs" >>readme.txt
- echo "SystemOut.log                                      from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "SystemErr.log                                      from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "startServer.log                                    from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "stopServer.log                                     from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "native_stdout.log                                  from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "native_stderr.log                                  from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
- echo "ASBNode_logs/                                      from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/ASBNode/logs/asb-agent-*.out"       >>readme.txt
- echo "DSODB_logs/                                        from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/logs/*"                >>readme.txt
- echo "local_log_file.log                                 from Engine-Tier   ~/istool_workspace/.metadata/.log"                                                      >>readme.txt
- echo " " >>readme.txt
+  mkdir -p ASBNode_logs
+  cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/ASBNode/logs/asb-agent-*.out ASBNode_logs/.
+  mkdir -p DSODB_logs
+  cp /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/logs/* DSODB_logs/. 
 
- P_VERSION=`uname -a`
- echo "Linux-Version (RedHat) via uname -a   ===>>> $P_VERSION" >>readme.txt
- echo "Files wurden im Verzeichnis $P_DIR fuer einen eventuellen PMR abgelegt" | tee -a $LOGFILE
- cd
+  cp ~/istool_workspace/.metadata/.log local_log_file.log
 
-  ## TODO: entsprechende Logeintraege einfuegen
+  echo "Version_Engine_Tier.xml  (Original Version.xml)    from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer" >>readme.txt
+  echo "Version_Service_Tier.xml (Original Version.xml)    from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer" >>readme.txt
+  echo "igc.log                                            from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs" >>readme.txt
+  echo "SystemOut.log                                      from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "SystemErr.log                                      from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "startServer.log                                    from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "stopServer.log                                     from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "native_stdout.log                                  from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "native_stderr.log                                  from Service-Tier  /APPL/de/$P_FOLDER/ibm/infosphere/WebSphere/AppServer/profiles/InfoSphere/logs/server1" >>readme.txt
+  echo "ASBNode_logs/                                      from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/ASBNode/logs/asb-agent-*.out"       >>readme.txt
+  echo "DSODB_logs/                                        from Engine-Tier   /APPL/de/$P_FOLDER/ibm/infosphere/InformationServer/Server/DSODB/logs/*"                >>readme.txt
+  echo "local_log_file.log                                 from Engine-Tier   ~/istool_workspace/.metadata/.log"                                                      >>readme.txt
+  echo " " >>readme.txt
+
+  P_VERSION=`uname -a`
+  echo "Linux-Version (RedHat) via uname -a   ===>>> $P_VERSION" >>readme.txt
+  echo "Files wurden im Verzeichnis $P_DIR fuer einen eventuellen PMR abgelegt" | tee -a $LOGFILE
+  cd
+
+  # Entsprechende Logeintraege einfuegen
   if [[ $1 = "report" ]]
    then 
     zip -qr $P_DIR $P_DIR
     P_ZIP_NAME=$P_DIR.zip
-    status | mailx -s "IIS_SERVICES" -a $P_ZIP_NAME -a $LOGFILE SP_ITBCC-WAREHOUSING@ing-diba.de
+    (
+     echo "Hallo Postfach,"
+     echo ""
+     echo "die DataStage Überwachung meldet einen Alert."
+     echo "Details unter $P_ZIP_NAME auf der Engine-Tier des App-Servers."
+     echo "Siehe auch Doku unter https://confluence/pages/viewpage.action?pageId=175747050"
+     echo ""
+     echo "Bitte zeitnah beheben!"
+     echo ""
+     echo ""
+     echo ""
+     status
+    ) |     
+    mailx -s "IIS_SERVICES - $P_ENVIRONMENT (Monitoring Alert)" SP_ITBCC-WAREHOUSING@ing-diba.de
   fi
-}  
+}
+
 
 
 
@@ -607,7 +612,11 @@ pmr()
 check_params()
 {
  # Normalfall ein Input-Parameter. Bei zwei muss es aber stop und force sein -> sonst Abbruch
- P_COUNT_PARAMETER=`echo $P_PARAMETER_LIST | wc -w`   
+ P_COUNT_PARAMETER=`echo $P_PARAMETER_LIST | wc -w`
+ 
+ if [ $P_COUNT_PARAMETER -eq 0 ]
+   then abbruch 8 "Falsche Input-Parameter Kombination / Usage: $0 { start | stop [force] | restart | status [report] | pmr | testing | clear_big_rt_log_folders | kill}"   
+ fi
 
  if [ $P_COUNT_PARAMETER -gt 2 ] || [ $P_COUNT_PARAMETER -lt 1 ]
    then abbruch 8 "Es sind nur 1-2 Input-Parameter erlaubt"
@@ -617,12 +626,12 @@ check_params()
  P_FORCE="No"
  if [ $P_COUNT_PARAMETER = 2 ]
    then P_PARAMETER2=$(echo $P_PARAMETER_LIST | awk '{print $2}')
-        if [ "$P_PARAMETER1" != "stop" ] || [ "$P_PARAMETER2" != "force" ]
-          then abbruch 8 "Falsche Input-Parameter Kombination / Usage: $0 { start | stop [force] | restart | status | pmr }"
+        if [[ "$P_PARAMETER1" != "stop" || "$P_PARAMETER2" != "force" ]] && [[ "$P_PARAMETER1" != "status" || "$P_PARAMETER2" != "report" ]]
+          then abbruch 8 "Falsche Input-Parameter Kombination / Usage: $0 { start | stop [force] | restart | status [report] | pmr | testing | clear_big_rt_log_folders | kill}"
           else P_FORCE="Yes"
         fi
  fi
-}  
+}
 
 
 
@@ -637,8 +646,8 @@ check_infint_db()
     exit 0
 HERE_SCRIPT`
 if test $? -ne 0
- then echo "$P_INFINT_DB                     - down"
- else echo "$P_INFINT_DB                     - up"
+ then echo "Database  ($P_INFINT_DB)        - down"               
+ else echo "Database  ($P_INFINT_DB)        - up"
 fi
 }
 
@@ -658,24 +667,38 @@ testing()
 
 
 
+
+
 #  >= RT_LOGs aufraeumen: 1GB Files DATA.30 und OVER.30 mit CLEAR per universe shell loeschen
 clear_big_rt_log_folders()
 {
- P_WHAT="Grosse RT_LOG Ordner aufraeumen"
- echo "********************************* `date +'%d.%m.%Y %H:%M'` - $P_WHAT" | tee -a $LOGFILE
-
  cd /APPL/de/$P_FOLDER/Projects
+
  for P_PROJECT_DIRECTORY in `ls | grep DE_DATA_LAKE`
  do
    cd /APPL/de/$P_FOLDER/Projects/$P_PROJECT_DIRECTORY/
 
    f=`du -h RT_LOG* --max-depth=1 | grep '[0-9]G\>' | awk -F '\t' '{print $2}'`
-   for e in $f; do $DSHOME/bin/uvsh "clear.file $e" | cut -b 6- | tee -a $LOGFILE; done
+
+   if [[ "$f" ]]
+   then
+      P_WHAT="Grosse RT_LOG Ordner aufraeumen in $P_PROJECT_DIRECTORY"
+      echo "********************************* `date +'%d.%m.%Y %H:%M'` - $P_WHAT" | tee -a $LOGFILE
+ 
+      for e in $f
+      do
+        $DSHOME/bin/uvsh "clear.file $e" | cut -b 8- | tee -a $LOGFILE
+      done
+
+      echo "Grosse RT_LOGS auf Server `hostname` im Projekt $P_PROJECT_DIRECTORY gefunden! RT_LOG Verzeichnisse wurden bereits bereinigt! Bitte Logfile ~/iis_services.log auf Server `hostname` prüfen!" | mailx  -s "Grosse RT_LOGS auf `hostname` im Projekt $P_PROJECT_DIRECTORY gefunden!" SP_ITBCC-WAREHOUSING@ing-diba.de
+    fi
  done
-
-
- echo "Ende  Housekeeping `date +'%d.%m.%Y %H:%M'`" | tee -a $LOGFILE
 }
+
+
+
+
+
 
 clear_ph_folder()
 {
@@ -688,6 +711,7 @@ clear_ph_folder()
    echo "CLEAR.FILE &PH&" | $DSHOME/bin/uvsh  >/dev/null 
  done
 }
+
 
 
 
@@ -725,6 +749,13 @@ kill_process()
  fi
 }
 
+
+
+
+
+
+
+
 kill_ds_processes()
 {
  # List all running DSD and FWK processes
@@ -757,6 +788,12 @@ kill_ds_processes()
 
 }
 
+
+
+
+
+
+
 check_process()
 {
   P_ANZAHL_O=`ps -ef | grep osh | grep -v grep | wc -l`
@@ -770,6 +807,9 @@ check_process()
   fi
 
 }
+
+
+
 
 
 
@@ -813,17 +853,10 @@ pid_file()
 }
 
 
-
-
-
-
-
 remove_pid_file()
 {
  rm $PIDFILE
 }
-
-
 
 
 
@@ -844,14 +877,16 @@ case $P_PARAMETER1 in
    'start') start ;;
    'stop')  stop $2 ;;
    'restart') restart $2 ;;
-   'status')  status ;;
+   'status')  status $2 ;;
    'pmr')     pmr ;;
    'testing') testing ;;
-   'clear_big_rt_log_folders') clear_big_rt_log_folders ;;
-   'report') check_status ;;
+   'clear_big_rt_log_folders') clear_big_rt_log_folders ;;   
    'kill')    kill_ds_processes ;;
    *)
-     abbruch 8 "Usage: $0 { start | stop [force] | restart | status | pmr | kill}" ;;
+     abbruch 8 "Usage: $0 { start | stop [force] | restart | status [report] | pmr | testing | clear_big_rt_log_folders | kill}" ;;
 esac
+
+
+
 
 exit 0
