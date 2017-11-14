@@ -1,58 +1,5 @@
 #!/bin/bash
 
-# 23.12.2015  R. Penz     V1.00    neu
-# 19.02.2016  R. Penz     V1.01    komplett dynamisch, um auf allen 4 Umgebungen lauffaehig zu sein
-# 11.03.2016  R. Penz     V1.02    bash festgelegt und pmr, housekeeping eingefuegt, sowie log angepasst
-#                                  -q bei ssh unterbindet fast alle Meldungen, ausser Last login und Kickstarted
-#                                  In Verbindung mit touch .hushlogin auf der Ziel-Seite wird alles unterbunden
-# 14.03.2016  R. Penz     V1.03    Zombies in status und Linux Version fuer pmr aufgenommen
-# 01.04.2016  R. Penz     V1.04    Housekeeping errorfiles
-# 06.04.2016  R. Penz     V1.05    check_params
-# 20.04.2016  R. Penz     V1.06    check_infint_db
-# 31.05.2016  R. Penz     V1.07    "status" automatisch vor und nach "stop","start" und "restart" aufrufen,
-#                                  um die Zustaende eines eventuellen Problems zu sichern
-# 01.06.2016  R. Penz     V1.08    housekeeping Scratch angepasst (dlde nun auch gross geschrieben)
-# 15.06.2016  R. Penz     V1.09    DSD Prozesse ebenfalls zaehlen
-# 04.07.2016  R. Penz     V1.10    Input Parameter ueberpruefen
-# 18.07.2016  R. Penz     V1.11    check infint db zusaetzlich ins LOG umlenken
-# 08.08.2016  R. Penz     V1.12    MetadataServer.sh anstatt [start][stop]Server.sh (nun seit Version 11.5 passwortlos)
-# 09.08.2016  R. Penz     V1.13    start server1 wieder aktiviert (ist passwortlos), da MetadataServer.sh beim Starten sofort zurueck meldet,
-#                                  obwohl Service noch nicht komplett hoch gefahren ist
-# 10.08.2016  R. Penz     V1.14    Housekeeping PH und alte pmr-Ordner loeschen
-# 11.08.2016  R. Penz     V1.15    Housekeeping DSOMD/xml und Metadata Server Status undefined, falls Kafka wieder reinspielt
-# 12.08.2016  R. Penz     V1.16    Dumps aelter 10 Tage loeschen
-# 15.09.2016  R. Penz     V1.17    Anzeige der Sourcen-Version
-# 27.10.2016  R. Penz     V1.18    Disk Usage anzeigen
-# 31.10.2016  R. Penz     V1.19    tee fuer Disk-Size Anzeige einbauen und check infint-DB auf select * from dual erleichtert, da ab und zu komisches Verhalten
-#                                  housekeeping um temp und lookuptable erweitert
-# 04.11.2016  R. Penz     V1.20    status um Speicher erweitert
-# 17.11.2016  R. Penz     V1.20.1  20000 anstatt 5000 Zeilen des Logfiles beim houskeeping behalten
-# 02.12.2016  V. Poliakov V1.20.2  wokaround DSMonApp nur fuer DEV
-# 05.12.2016  R. Penz     V1.21    Wokaround entfernt und Status fuer DSMonApp dauerhaft auf allen Umgebungen anzeigen
-# 12.01.2017  R. Penz     V1.22    Director Runtime Logs loeschen, aber nur auf DEV und Test
-# 09.03.2017  V.Poliakov  V1.23    Erweiterung fuer die Maintenance Umgebung
-# 21.03.2017  R. Penz     V1.24    kill eingebaut
-# 22.03.2017  R. Penz     V1.24.1  ssh Verbindung zu Service-Tier wegen Dumps war nicht sauber eingeklammert. Nun aussen Gaensefuesschen und innen einfaches Hochkomma
-# 24.04.2017  R. Penz     V1.25    DSOMDMonApp nach Restart oder Hochfahren stoppen. Wird nicht benoetigt
-# 04.05.2017  D. Rahman   V1.26    Einbau PID-File - zweifache Ausfuehrung des Skriptes wird verhindert
-# 08.05.2017  R. Penz     V1.27    Housekeeping - DSODB-Logs aelter 20 Tage loeschen
-# 12.05.2017  R. Penz     V1.28    Housekeeping - Dumpfiles auf Service-Tier unter WebSphere/AppServer/profiles/InfoSphere loeschen
-# 15.05.2017  D. Rahman   V1.29    Einbau der Force-Option als Zweit-Parameter, dieser fuehrt beim stop force zusaetzlich die kill_processes aus
-# 24.05.2017  R. Penz     V1.30    Housekeeping - Start- und Endezeit protokollieren und loeschen PH angepasst
-# 29.05.2017  D. Rahman   V1.31    Einbau report-Funktion die periodisch zur Ueberwachung genutzt wird. Einbau zip-Funktion in pmr, falls reported wird.
-# 06.06.2017  D. Rahman   V1.32    Bugfix of restart option
-# 20.06.2017  D. Rahman   V1.33    Added listening of running DSD- and FWK-Processes in case of failed shutdown
-# 11.07.2017  M. Hauck    V1.34    Modification of stop function. Stop only when runisalite is NOT running (also when force option is used).
-#                                  Show all running processes before killing them (stop force)
-#                                  Show count of runisalite processes when displaying status
-# 14.07.2017  M. Hauck    V1.35    Added some new directories to pmr function (IBM reporting)
-#                                  Update of housekeeping function. Clean up files older 5 days in /APPL/data/de/$P_FOLDER/Projects/DE_DATA_LAKE_SPTE/files/datasets, delete temporary files in /APPL/Scratch
-#                                  Update of kill_ds_processes function. Show all killed processes
-# 03.08.2017  M. Hauck    V1.36    Dynamic dataset cleanup in the housekeeping process. A search pattern with value "DE_DATA_LAKE" is used now to find all relevant projects folders in "/APPL/data/de/$P_FOLDER/Projects/"
-#                                  Before a fixed value (DE_DATA_LAKE_SPTE) was used, but that's wrong because project names are different on each environment.
-# 09.08.2017  M. Hauck    V1.37    Small bugfixes; Cleanup of big RT_LOG folders (clear_big_rt_log_folders) in all environments (part of server start process)
-# 10.08.2017  M. Hauck    V1.38    Optimisation of clear_big_rt_log_folders. Get rid of useless uvsh log informations
-
 P_SOURCE_VERSION="V1.38"
 
 
