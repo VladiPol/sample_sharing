@@ -3,7 +3,7 @@
 -- Erstellen der ODS.KRDB_SCPS_CPD_KONTO Tabelle mit der Intervall-Partitionierung
 --------------------------------------------------------------------------------
 
-execute error_handling('DROP TABLE ODS.KRDB_SCPS_CPD_KONTO CASCADE CONSTRAINTS PURGE');
+execute error_handling('DROP TABLE ODS.KRDB_SCPS_CPD_KONTO CASCADE CONSTRAINTS PURGE'); 
 
 CREATE TABLE KRDB_SCPS_CPD_KONTO
 (
@@ -183,21 +183,21 @@ COMMIT;
 /*                                                              */
 /*==============================================================*/
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_IF IS 'Interne Nummer (künstlicher Primary Key) eines Eintrags';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_IF IS 'Interne Nummer (kÃ¼nstlicher Primary Key) eines Eintrags';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_PART_IDENT IS 'Partitionnummer Der PartitionsIndikator ist ein technisches Hilfsmittel zur physikalischen Strukturierung von Datenbank-Tabellen.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_KEY_DATUM IS 'Umsatz: Datum, an dem der Umsatz bilanzwirksam gebucht wird.Vorweg-Umsatz: Datum, an dem der Umsatz vorgemerkt wird.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_SEQUENCE_NR IS 'Die Sequence-Nummer ist ein technisches Hilfsmittel zur Primär-Key-Bildung. Sie ist die laufende Nummer des Umsatzes seit Beginn der Zählung (Oracle, DB2) bzw. die laufende Nummer bzgl. des aktuellen Buchungstages (Sesam).';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_SEQUENCE_NR IS 'Die Sequence-Nummer ist ein technisches Hilfsmittel zur PrimÃ¤r-Key-Bildung. Sie ist die laufende Nummer des Umsatzes seit Beginn der ZÃ¤hlung (Oracle, DB2) bzw. die laufende Nummer bzgl. des aktuellen Buchungstages (Sesam).';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTO_ID IS 'Interne (semantik-freie) Konto-ID. Identifiziert eindeutig ein Datenobjekt Konto.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MODIFIKATION_NR IS 'Mit Hilfe der KontoModifikationsNummer wird die chronologische Reihenfolge von konto-bezogenen Geschäftsvorfällen fest gehalten und in den Nachweis-Daten wie Umsatz, Vorweg-Umsatz, Änderungs-Satz, dokumentiert. Die ModifikationsNummer dient zudem als Update-Check-Field für das Daten-Objekt Konto.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MODIFIKATION_NR IS 'Mit Hilfe der KontoModifikationsNummer wird die chronologische Reihenfolge von konto-bezogenen GeschÃ¤ftsvorfÃ¤llen fest gehalten und in den Nachweis-Daten wie Umsatz, Vorweg-Umsatz, Ã„nderungs-Satz, dokumentiert. Die ModifikationsNummer dient zudem als Update-Check-Field fÃ¼r das Daten-Objekt Konto.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMS_REFERENZ_EXT IS 'Die UmsatzReferenzExtern ist ein Identifikations-Merkmal, das vom Umsatz-anliefernden System optional vor gegeben werden kann. Dieses Feld entspricht weitgehend dem alten Primär-Key der LEASY-Vorweg-Umsatz-Datei (ohne BuchungsDatum).';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMS_REFERENZ_EXT IS 'Die UmsatzReferenzExtern ist ein Identifikations-Merkmal, das vom Umsatz-anliefernden System optional vor gegeben werden kann. Dieses Feld entspricht weitgehend dem alten PrimÃ¤r-Key der LEASY-Vorweg-Umsatz-Datei (ohne BuchungsDatum).';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_PRIMANOTA_NUMMER IS 'Maschinell vergebene Primanoten-Nummern: Abstimm-Einheit, zu der der Umsatz für die buchungstägliche Salden-Abstimmung nach Soll und Haben zugeordnet ist.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_PRIMANOTA_NUMMER IS 'Maschinell vergebene Primanoten-Nummern: Abstimm-Einheit, zu der der Umsatz fÃ¼r die buchungstÃ¤gliche Salden-Abstimmung nach Soll und Haben zugeordnet ist.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SEGMENT_KZ IS 'Zuordnung des Konto zu einer Produkt-Sparte (KK, FG, SP, etc.).';
 
@@ -205,7 +205,7 @@ COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ORDNUNGSBEGRIFF IS 'Filial-Zuordn
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EINREICHER_ID IS 'Das Feld EinreicherIdentifikation identifiziert das Umsatz-erzeugende bzw. Umsatz-anliefernde System, z.B. DTAEIN.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DATEI_NACHRICHT_ID IS 'Das Feld DateiNachrichtID identifiziert eine Einheit von Bewegungs-Daten, z.B. eine Datei mit Umsätzen aus einem DTA-Eingangs-Band.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DATEI_NACHRICHT_ID IS 'Das Feld DateiNachrichtID identifiziert eine Einheit von Bewegungs-Daten, z.B. eine Datei mit UmsÃ¤tzen aus einem DTA-Eingangs-Band.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EINGABE_NAME IS 'Dialog: Name des Anwenders, der den Umsatz erfasst hat.Batch: Erfassungs-/Berechtigungs-User (ext. Dialog), Umsatz-erzeugendes Programm';
 
@@ -213,43 +213,43 @@ COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMS_EINGABE_UHR IS 'Reale Uhrzeit
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMS_EINGABE_OBG IS 'Filial-Zuordnung des Umsatz-Erzeugers bzw. des Einreichers.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BUCH_TEXT_SCHLUE IS 'Schlüssel für die Verarbeitungs-Steuerung der Umsatz-Buchung.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BUCH_TEXT_SCHLUE IS 'SchlÃ¼ssel fÃ¼r die Verarbeitungs-Steuerung der Umsatz-Buchung.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ZUSATZ_TEXT_SCHLUE IS 'Ergänzungs-Schlüssel für die Verarbeitungs-Steuerung der Umsatz-Buchung';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ZUSATZ_TEXT_SCHLUE IS 'ErgÃ¤nzungs-SchlÃ¼ssel fÃ¼r die Verarbeitungs-Steuerung der Umsatz-Buchung';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_ART IS 'Die UmsatzArt kennzeichnet Umsätze und Vorweg-Umsätze bzgl. ihrer (zukünftigen) Bilanz-Wirksamkeit.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_ART IS 'Die UmsatzArt kennzeichnet UmsÃ¤tze und Vorweg-UmsÃ¤tze bzgl. ihrer (zukÃ¼nftigen) Bilanz-Wirksamkeit.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_STATUS IS 'Der UmsatzStatus kennzeichnet den aktuellen Zustand des Umsatzes.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETRAG_STATUS IS 'Der Betrag eines Vorweg-Umsatzes kann vorläufig (NichtFinal) sein. Es wird dann eine Wieder-Vorlage mit einem finalen Betrag erwartet.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETRAG_STATUS IS 'Der Betrag eines Vorweg-Umsatzes kann vorlÃ¤ufig (NichtFinal) sein. Es wird dann eine Wieder-Vorlage mit einem finalen Betrag erwartet.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_POSTEN_TYP IS 'Unterscheidung beim Zahlungsverkehr zwischen Auftraggeber und Empfänger. Bei Zahlungs-Aufträgen werden Auftraggeber- und Empfänger-Zahlungs-Posten typisiert.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_POSTEN_TYP IS 'Unterscheidung beim Zahlungsverkehr zwischen Auftraggeber und EmpfÃ¤nger. Bei Zahlungs-AuftrÃ¤gen werden Auftraggeber- und EmpfÃ¤nger-Zahlungs-Posten typisiert.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_REO_STATUS IS 'Das Kennzeichen dient dazu, die Zulässigkeit der physikalischen Reorganisation für den Umsatz (nach der Standard-Verweilzeit) anzuzeigen.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_REO_STATUS IS 'Das Kennzeichen dient dazu, die ZulÃ¤ssigkeit der physikalischen Reorganisation fÃ¼r den Umsatz (nach der Standard-Verweilzeit) anzuzeigen.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VERARB_ART_S IS 'Die VerarbeitungsArt kennzeichnet Umgebungs-Bedingung und Medium, die massgeblich die Umsatz-Verarbeitung beeinflussen. Neben dem herkömmlichen Dialog, Batch und Kasse werden die Medien Nachricht und OnlineInternet unterstützt.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VERARB_ART_S IS 'Die VerarbeitungsArt kennzeichnet Umgebungs-Bedingung und Medium, die massgeblich die Umsatz-Verarbeitung beeinflussen. Neben dem herkÃ¶mmlichen Dialog, Batch und Kasse werden die Medien Nachricht und OnlineInternet unterstÃ¼tzt.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTO_ID_GEGEN IS 'Interne Konto-ID eines Abrechnungs-Kontos (Fremdwährungs, Kredit)';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTO_ID_GEGEN IS 'Interne Konto-ID eines Abrechnungs-Kontos (FremdwÃ¤hrungs, Kredit)';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ZINS_SATZ IS 'Zinssatz in Prozent';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ZINSEN IS 'Betrag der auf den Umsatz entfallenden Zinsen (Spar, Kredit)';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VORSCHUSS_ZINSEN IS 'Betrag der auf den Umsatz entfallenden Vorfälligkeits-Zinsen (Spar)';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VORSCHUSS_ZINSEN IS 'Betrag der auf den Umsatz entfallenden VorfÃ¤lligkeits-Zinsen (Spar)';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BONUS_VERAENDERUNG IS 'Betrag der auf den Umsatz entfallenden Bonus-Veränderung (Spar)';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BONUS_VERAENDERUNG IS 'Betrag der auf den Umsatz entfallenden Bonus-VerÃ¤nderung (Spar)';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_RUECK_VORAUS IS 'Betrag des Rückstandes / der Vorausleistung nach Buchung des aktuellen Umsatzes (Kredit)';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_RUECK_VORAUS IS 'Betrag des RÃ¼ckstandes / der Vorausleistung nach Buchung des aktuellen Umsatzes (Kredit)';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_GEBUEHR IS 'Nachrichtliche Information: Abgerechnete Gebühr zum Umsatz (z.B. bei Konto-Auflösung).';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_GEBUEHR IS 'Nachrichtliche Information: Abgerechnete GebÃ¼hr zum Umsatz (z.B. bei Konto-AuflÃ¶sung).';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ANZAHL_ARBEITSPOST IS 'Anzahl der Einzel-Buchungen (Posten) zu einer Sammel-Buchung.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MAPPENNUMMER IS 'Oberste Einheit des Numerierungssystems aus KORDOBA EZV  EZV-Erfassungs-Nummer für einen Belege-Stapel';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MAPPENNUMMER IS 'Oberste Einheit des Numerierungssystems aus KORDOBA EZV  EZV-Erfassungs-Nummer fÃ¼r einen Belege-Stapel';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KOSTENSTELLE_UMS IS 'Kostenstelle für den Umsatz, wird im Standard nicht verarbeitet. Zuordnung des Umsatzes zu einer Kostenstelle.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KOSTENSTELLE_UMS IS 'Kostenstelle fÃ¼r den Umsatz, wird im Standard nicht verarbeitet. Zuordnung des Umsatzes zu einer Kostenstelle.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KOSTENST_ZUSATZ IS 'Kategorisierung des Umsatzes nach Geschäfts-Art oder Geschäfts-Sparte';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KOSTENST_ZUSATZ IS 'Kategorisierung des Umsatzes nach GeschÃ¤fts-Art oder GeschÃ¤fts-Sparte';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MEHRWERTSTEUER_S IS 'Das Feld kennzeichnet die Mehrwert-Steuer-Pflichtigkeit des Umsatzes.';
 
@@ -257,61 +257,61 @@ COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_LAENDER_KZ IS 'ISO-Laender-Kennze
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SCHLUSS_DATUM IS 'Schlussdatum';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SUMME_SPES_GEB IS 'Summe Spesen Gebühren';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SUMME_SPES_GEB IS 'Summe Spesen GebÃ¼hren';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SUMME_STEUERN IS 'Summe der Steuern';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_STUECKZINS IS 'Stückzins';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_STUECKZINS IS 'StÃ¼ckzins';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BRUTTO_BETR IS 'Bruttobetrag';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UR_SCHLUSS_DATUM IS 'Ursprüngliches Schluss-Datum';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UR_SCHLUSS_DATUM IS 'UrsprÃ¼ngliches Schluss-Datum';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UR_UMSATZ_REFERENZ IS 'Ursprüngliche Umsatz-Referenz';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UR_UMSATZ_REFERENZ IS 'UrsprÃ¼ngliche Umsatz-Referenz';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_WECHSELNUMMER IS 'Nummer des aktuellen Wechsels';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SCHECK_NR_UMSATZ IS '(Auslands-) Scheck-Nummer zu Umsatz';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_REFERENZNUMMER IS 'Optionale zusätzliche Referenz des Umsatzes. Dieses Feld steht in Konkurrenz zu der neuen UmsatzReferenzExtern. Es sollte möglichst nicht mehr benutzt werden. Wegen verschiedener interner Verwendungen kann das Feld noch nicht aus der neuen Struktur entfernt werden.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_REFERENZNUMMER IS 'Optionale zusÃ¤tzliche Referenz des Umsatzes. Dieses Feld steht in Konkurrenz zu der neuen UmsatzReferenzExtern. Es sollte mÃ¶glichst nicht mehr benutzt werden. Wegen verschiedener interner Verwendungen kann das Feld noch nicht aus der neuen Struktur entfernt werden.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_FILMBILD_SUCH_NR IS 'Index einer Archivierungs-Stelle (Mikrofiche, Optisches Archiv) zu archiviertem Beleg-Gut';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DTA_LFD_NR IS 'Referenz-Nummer aus dem DTA-Eingang bzw. für den DTA-Ausgang. Das Feld gehört zu den Bank-Internen Daten im DTA-C-Satz.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DTA_LFD_NR IS 'Referenz-Nummer aus dem DTA-Eingang bzw. fÃ¼r den DTA-Ausgang. Das Feld gehÃ¶rt zu den Bank-Internen Daten im DTA-C-Satz.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTO_ID_ORIG IS 'Interne Konto-ID des Original-Kontos bei CPD-Buchungen';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_MELDUNGS_KZ IS 'Das MeldungsKennzeichen wird gesetzt, wenn zu einem Umsatz Hinweis- und Fehler-Meldungen in die Meldungs-Tabelle BUKMEL geschrieben werden. Dieses Feature wird nur bei CPD-Buchungen genutzt.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URPN IS 'Sicherung der ursprünglichen Primanota bei CPD-Buchungen und Umbuchungen';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URPN IS 'Sicherung der ursprÃ¼nglichen Primanota bei CPD-Buchungen und Umbuchungen';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URTEXT IS 'Sicherung des ursprünglichen Buchungstextes bei CPD-Buchungen und Umbuchungen';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URTEXT IS 'Sicherung des ursprÃ¼nglichen Buchungstextes bei CPD-Buchungen und Umbuchungen';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URZTXT IS 'Sicherung des ursprünglichen Zusatztextes bei CPD-Buchungen und Umbuchungen';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_URZTXT IS 'Sicherung des ursprÃ¼nglichen Zusatztextes bei CPD-Buchungen und Umbuchungen';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_CPD_ERFASSER IS 'Aktueller Bearbeiter des vorliegenden CPD-Umsatzes';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_CPD_UMSATZSTATUS IS 'Aktueller Bearbeitungs-Status des CPD-Umsatzes';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_FREIGABE_SCHLUE IS 'Das Kennzeichen Freigabe-Schluessel unterstützt das Vier-Augen-Prinzip.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_FREIGABE_SCHLUE IS 'Das Kennzeichen Freigabe-Schluessel unterstÃ¼tzt das Vier-Augen-Prinzip.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BEDIENER_BESTAET IS 'Verarbeitungs-Kennzeichen Bediener-Bestätigung. Mit der Bediener-Bestätigung kann in bestimmten Fällen eine Umsatz-Freigabe erfolgen.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BEDIENER_BESTAET IS 'Verarbeitungs-Kennzeichen Bediener-BestÃ¤tigung. Mit der Bediener-BestÃ¤tigung kann in bestimmten FÃ¤llen eine Umsatz-Freigabe erfolgen.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTROLL_SCHLUE IS 'Verarbeitungs-Kennzeichen Kontroll-Schlüssel. Der Kontroll-Schlüssel ermöglicht das Übergehen bestimmter Buchungs-Hindernisse.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KONTROLL_SCHLUE IS 'Verarbeitungs-Kennzeichen Kontroll-SchlÃ¼ssel. Der Kontroll-SchlÃ¼ssel ermÃ¶glicht das Ãœbergehen bestimmter Buchungs-Hindernisse.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BUCHEN_OHNE_DISPO IS 'Verarbeitungs-Kennzeichen BuchenOhneDisposition. Die Buchung ist zwangsweise durch geführt worden. Dies kann dann notwendig sein, wenn der Zahlungs-Vorgang selbst bereits positiv abgeschlossen ist.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BUCHEN_OHNE_DISPO IS 'Verarbeitungs-Kennzeichen BuchenOhneDisposition. Die Buchung ist zwangsweise durch gefÃ¼hrt worden. Dies kann dann notwendig sein, wenn der Zahlungs-Vorgang selbst bereits positiv abgeschlossen ist.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_KZ_PRFREL IS 'Verarbeitungs-Kennzeichen Prüfungs-Relevanter-Geschäftsvorfall. Der Umsatz ist auf entsprechenden Listen gesondert auszuweisen.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_KZ_PRFREL IS 'Verarbeitungs-Kennzeichen PrÃ¼fungs-Relevanter-GeschÃ¤ftsvorfall. Der Umsatz ist auf entsprechenden Listen gesondert auszuweisen.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SPARBUCH_NACHTRAG IS 'Verarbeitungs-Kennzeichen Sparbuch-Nachtrag. Nachgetragene Umsätze (bei Sparformen mit Buch) werden gekennzeichnet.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_SPARBUCH_NACHTRAG IS 'Verarbeitungs-Kennzeichen Sparbuch-Nachtrag. Nachgetragene UmsÃ¤tze (bei Sparformen mit Buch) werden gekennzeichnet.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_BUCH_VORL IS 'Verarbeitungs-Kennzeichen Verfügung-Ohne-Buchvorlage. Bei Sparformen mit Buch wird damit angezeigt, dass der Zahlungs-Vorgang (an der Kasse) ohne die Vorlage des Sparbuchs erfolgte.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_BUCH_VORL IS 'Verarbeitungs-Kennzeichen VerfÃ¼gung-Ohne-Buchvorlage. Bei Sparformen mit Buch wird damit angezeigt, dass der Zahlungs-Vorgang (an der Kasse) ohne die Vorlage des Sparbuchs erfolgte.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_VZ_S IS 'Verarbeitungs-Kennzeichen Vorfälligkeits-Zinsfrei. Bei Verfügung von nicht gekündigten Spar-Einlagen kann die VZ-Berechnung ausgeschaltet worden sein.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_VZ_S IS 'Verarbeitungs-Kennzeichen VorfÃ¤lligkeits-Zinsfrei. Bei VerfÃ¼gung von nicht gekÃ¼ndigten Spar-Einlagen kann die VZ-Berechnung ausgeschaltet worden sein.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_KAP_S IS 'Verarbeitungs-Kennzeichen Kapitalisierungs-Umsatz (Ertrag). Umsätze aus Ertrags-Gutschriften/Aufwands-Belastungen zu Kunden-Konten werden gesondert gekennzeichnet.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMSATZ_KAP_S IS 'Verarbeitungs-Kennzeichen Kapitalisierungs-Umsatz (Ertrag). UmsÃ¤tze aus Ertrags-Gutschriften/Aufwands-Belastungen zu Kunden-Konten werden gesondert gekennzeichnet.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BILANZ_UEBER_UNTER IS 'Verarbeitungs-Kennzeichen Bilanz-Zuordnung. Die Bilanz-Wirksamkeit eines Umsatzes (Über-/Unter-Strich) wird fest gehalten.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BILANZ_UEBER_UNTER IS 'Verarbeitungs-Kennzeichen Bilanz-Zuordnung. Die Bilanz-Wirksamkeit eines Umsatzes (Ãœber-/Unter-Strich) wird fest gehalten.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ANZEIGEPFLICHT_AWG IS 'Verarbeitungs-Kennzeichen zur Anzeigepflicht nach AWG. Die Anzeigepflicht eines Umsatzes nach AWG wird fest gehalten.';
 
@@ -321,35 +321,35 @@ COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_UMS_ANLAGE_FORMAT IS 'C-Satz oder
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KAD_AUSZ_NR IS 'Auszug-Nr.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KTO_WAEHRUNG IS 'Kordoba-Interner Währungs-Schlüssel der Konto-Währung. Es wird die sogenannte Kurs-Nummer verwendet. Die Auftrags-Währung (Ausführungs-Währung) ist immer die Konto-Währung !';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KTO_WAEHRUNG IS 'Kordoba-Interner WÃ¤hrungs-SchlÃ¼ssel der Konto-WÃ¤hrung. Es wird die sogenannte Kurs-Nummer verwendet. Die Auftrags-WÃ¤hrung (AusfÃ¼hrungs-WÃ¤hrung) ist immer die Konto-WÃ¤hrung !';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KTO_WAEHR_ART_S IS 'Die WährungsArt ist ein Unterscheidungs-Merkmal für den Euro-Währungs-Raum.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KTO_WAEHR_ART_S IS 'Die WÃ¤hrungsArt ist ein Unterscheidungs-Merkmal fÃ¼r den Euro-WÃ¤hrungs-Raum.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETR_KTO_WAEHR IS 'Betrag des Umsatzes in der Währung des Kontos';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETR_KTO_WAEHR IS 'Betrag des Umsatzes in der WÃ¤hrung des Kontos';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KURS_AKT_KONTO IS 'Liefer- und Abrechnungskurs des Umsatz-Betrages in Konto-Währung zum Umsatz-Betrag in der Währung der Rechnungslegung des Instituts (Bilanz-Währung).';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KURS_AKT_KONTO IS 'Liefer- und Abrechnungskurs des Umsatz-Betrages in Konto-WÃ¤hrung zum Umsatz-Betrag in der WÃ¤hrung der Rechnungslegung des Instituts (Bilanz-WÃ¤hrung).';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_KZ_NOTIERUNG_KURS IS 'Verarbeitungs-Kennzeichen zur Kurs-Definition';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_GRUNDEINHEIT_KURS IS 'Die Grundeinheit ist ein Basis-Betrag in der Konto-Währung (n WährungsEinheiten), auf den sich die Kurs-Angabe bezieht. Die Standard-Grundeinheit ist 1 WaehrungsEinheit. Daneben kommen üblicherweise noch 100 WE und 1000 WE vor.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_GRUNDEINHEIT_KURS IS 'Die Grundeinheit ist ein Basis-Betrag in der Konto-WÃ¤hrung (n WÃ¤hrungsEinheiten), auf den sich die Kurs-Angabe bezieht. Die Standard-Grundeinheit ist 1 WaehrungsEinheit. Daneben kommen Ã¼blicherweise noch 100 WE und 1000 WE vor.';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DENOM_ABW IS 'DenominationsAbweichnung';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BIL_WAEHRUNG IS 'Abweichungs-Betrag, der sich bei Rück-Rechnung in die Denominations-Währung ergibt (Doppel-Bilanz-Währungs-Korrektur).';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BIL_WAEHRUNG IS 'Abweichungs-Betrag, der sich bei RÃ¼ck-Rechnung in die Denominations-WÃ¤hrung ergibt (Doppel-Bilanz-WÃ¤hrungs-Korrektur).';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETR_BIL_WAEHR IS 'Betrag des Umsatzes in der Rechnungslegungs-Währung des Instituts';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_BETR_BIL_WAEHR IS 'Betrag des Umsatzes in der Rechnungslegungs-WÃ¤hrung des Instituts';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_DELTA_EINSTANDSKOST IS 'Errechneter Betrag aus Disposaldo und Disposaldo FW';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ERWEITERUNG_KUNDE IS 'Platzhalter-Feld für Kunden-spezifische Erweiterungen. Die Inhalte dieses Feldes können bereits bei der Umsatz-Einreichung oder über den User-Exit MUKPAL belegt werden. Es dürfen nur abdruckbare Zeichen enthalten sein.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ERWEITERUNG_KUNDE IS 'Platzhalter-Feld fÃ¼r Kunden-spezifische Erweiterungen. Die Inhalte dieses Feldes kÃ¶nnen bereits bei der Umsatz-Einreichung oder Ã¼ber den User-Exit MUKPAL belegt werden. Es dÃ¼rfen nur abdruckbare Zeichen enthalten sein.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EMPF_ZPFL_KONTO IS 'Zahlungs-Verkehr: Externe Konto-Darstellung .DTAC: Bankleitzahl + Konto (IBAN), AGRF: Swift-Feld F59K. Bei Empfänger-Posten müssen diese Information aus den Eingangs-Daten (DTA-C, DTAZV, Swift) in den Umsatz übernommen werden, bei Auftraggeber-Posten müssen die Informationen format-gerecht in die Ausgangs-Daten übertragen werden.';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EMPF_ZPFL_KONTO IS 'Zahlungs-Verkehr: Externe Konto-Darstellung .DTAC: Bankleitzahl + Konto (IBAN), AGRF: Swift-Feld F59K. Bei EmpfÃ¤nger-Posten mÃ¼ssen diese Information aus den Eingangs-Daten (DTA-C, DTAZV, Swift) in den Umsatz Ã¼bernommen werden, bei Auftraggeber-Posten mÃ¼ssen die Informationen format-gerecht in die Ausgangs-Daten Ã¼bertragen werden.';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EMPF_ZPFL_NAME IS 'Zahlungs-Verkehr: Name des ziel-seitigen Konto-Inhabers. DTAC: Empfänger-Zahlungspflichtiger, AGRF: Swift-Feld F59N';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_EMPF_ZPFL_NAME IS 'Zahlungs-Verkehr: Name des ziel-seitigen Konto-Inhabers. DTAC: EmpfÃ¤nger-Zahlungspflichtiger, AGRF: Swift-Feld F59N';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_ENDBEG_BANK IS 'Zahlungs-Verkehr: Name des ziel-seitigen Instituts. DTAC: Spaces, AGRF: Swift-Feld F58N';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_GESCHAEFTS_ART IS 'Swift-Geschäfts-Vorfall-Code';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_GESCHAEFTS_ART IS 'Swift-GeschÃ¤fts-Vorfall-Code';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_SWIFT_MT_EIN IS 'Swift-Message-Typ Nachrichten-Eingang';
 
@@ -359,13 +359,13 @@ COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_HEADER_BANK IS 'BIC-Code des b
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_REF_NR_F20 IS 'Swift-Referenz Feld F20';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_REF_NR_F20Z IS 'Referenz des konto-führenden Instituts, Swift-Feld F20Z';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_REF_NR_F20Z IS 'Referenz des konto-fÃ¼hrenden Instituts, Swift-Feld F20Z';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_AG_REF_ERI_DATEN IS 'EuroRelatedInformation. Besondere Hinweise bei Euro-Swift-Transaktionen';
 
 COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VERW_ZWECK_ANZAHL IS 'Anzahl der aktuell belegten Verwendungszwecke';
 
-COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VERW_ZWECK_TEXT_1 IS 'Verwendungszweck-Angaben Teil-1. DTAC: Feld VERWENDUNGSZWECK + fünf Erweiterungen ausser Namens-Teilen. AGRF: Swift-Felder F70';
+COMMENT ON COLUMN ODS.KRDB_SCPS_CPD_KONTO.SCPS_VERW_ZWECK_TEXT_1 IS 'Verwendungszweck-Angaben Teil-1. DTAC: Feld VERWENDUNGSZWECK + fÃ¼nf Erweiterungen ausser Namens-Teilen. AGRF: Swift-Felder F70';
 
 
 /*==============================================================*/
