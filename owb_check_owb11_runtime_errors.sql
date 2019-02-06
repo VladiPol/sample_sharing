@@ -57,7 +57,7 @@ select
    where
             wraml.AUDIT_MESSAGE_ID = wram.AUDIT_MESSAGE_ID
             and wram.audit_execution_id = wra.rte_id(+)
-            and wram.creation_date > sysdate-1
+            and wram.creation_date > sysdate-3
    order by
             wram.creation_date desc;
 
