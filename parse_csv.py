@@ -9,6 +9,7 @@
 
 import csv
 import pandas as pd
+import argparse
 from pprint import pprint
 
 # Global variables
@@ -18,19 +19,9 @@ LDM_FLAG    = True
 
 # CONSTANTS
 PATH_TO_FILE    = "C:/Git/david/utilities/"
-# UTF-8 with BOM
-CSV_ENCODING    = "utf-8-sig"
-# UTF-8
-#CSV_ENCODING    = "utf-8"
-CSV_DELIMETER   = ";"
 
-CSV_FILENAME         = "ikaros_sas_SchuldnerdatenExportIFRS9_20200630_120011"
-#CSV_FILENAME         = "encash_sas_ReportMachineGesamtbestandIFRS9_20200630_120000"
-#CSV_FILENAME          = "ausfalldaten_20201029"
-FULL_FILENAME        = CSV_FILENAME + ".csv"
-#FULL_FILENAME         = CSV_FILENAME
-OUTPUT_FILENAME       = CSV_FILENAME + ".txt"
-OUTPUT_EXCEL_FILENAME = CSV_FILENAME + ".xlsx"
+CSV_ENCODING         = {"UTF8BOM":"utf-8-sig","UTF8":"utf-8","ISO":"iso"}
+CSV_DELIMETER   = ";"
 
 # Output Excel File Constants
 SHEET_TABLE_NAME        = "Table"
@@ -46,6 +37,30 @@ PDM_VARCHAR  = "VARCHAR2"
 # ERROR Messages
 ADD_NEW_COMMUNITY_ERR = "Fehler beim Erstellen einer Community:"
 
+# Parser for command-line
+def getParam():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-f", "--filename", required=True, help="CSV file name to parse without extention")
+    ap.add_argument("-e", "--encoding", required=True, choices=['UTF8','UTF8BOM','ISO'], help="ENCODING of CSV file to parse")
+    
+    args = vars(ap.parse_args())
+
+    global input_filename
+    global arg_encoding
+    global csv_encoding
+
+    input_filename = args["filename"]    
+    arg_encoding   = args["encoding"]
+    csv_encoding   = CSV_ENCODING.get(arg_encoding, "Invalid encoding")
+
+    global FULL_FILENAME
+    global OUTPUT_FILENAME
+    global OUTPUT_EXCEL_FILENAME
+
+    FULL_FILENAME         = input_filename + ".csv"
+    OUTPUT_FILENAME       = input_filename + ".txt"
+    OUTPUT_EXCEL_FILENAME = input_filename + ".xlsx"
+
 
 # Logging
 def printError(err):
@@ -56,7 +71,7 @@ def printError(err):
 def getHeaderAndDataFromFile(filename):
     
     try:
-        with open(filename, 'r', encoding=CSV_ENCODING) as f:
+        with open(filename, 'r', encoding=csv_encoding) as f:
             csv_reader = csv.reader(f, delimiter=CSV_DELIMETER)
             # get the header
             header = next(csv_reader)
@@ -93,9 +108,9 @@ def writeStructureToExcel(cols, types):
     try:
         # makes sheet strukture (s. above)
         # Sheet Table
-        sheet_table = pd.DataFrame({SHEET_TABLE_NAME: [CSV_FILENAME]})
+        sheet_table = pd.DataFrame({SHEET_TABLE_NAME: [FULL_FILENAME]})
         # Sheet Table.Column
-        sheet_table_column = pd.DataFrame({SHEET_TABLE_COLUMN_1: CSV_FILENAME, SHEET_TABLE_COLUMN_2: cols, SHEET_TABLE_COLUMN_3: types})
+        sheet_table_column = pd.DataFrame({SHEET_TABLE_COLUMN_1: FULL_FILENAME, SHEET_TABLE_COLUMN_2: cols, SHEET_TABLE_COLUMN_3: types})
         # Puts output sheets together
         output_sheets = {SHEET_TABLE_NAME: sheet_table, SHEET_TABLE_COLUMN_NAME: sheet_table_column}
 
@@ -112,7 +127,10 @@ def writeStructureToExcel(cols, types):
 ##########################################################################################################
 if __name__ == '__main__':
 
-    # 0. Read the header of file
+    # 0. Get parameters
+    getParam()
+
+    # 1. Read the header of file
     header, row = getHeaderAndDataFromFile(PATH_TO_FILE + FULL_FILENAME)
 
     if header != None and row != None:
@@ -136,10 +154,10 @@ if __name__ == '__main__':
                 column_types.append(PDM_VARCHAR + "(" + str(len(header[i])) + ")")
                 if DEBUG_FLAG: pprint(header[i].strip() + "\t" + PDM_VARCHAR + "(" + str(len(header[i])) + ")")
 
-        # 1. writes the structure into the file
+        # 2. writes the structure into the file
         writeStructureToTXT(column_names, column_types)
 
-        # 2. writes the structure into the Excel file
+        # 3. writes the structure into the Excel file
         writeStructureToExcel(column_names, column_types)
 
 
