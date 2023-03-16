@@ -1,0 +1,22 @@
+###########################################
+#           Install Oracle Full Client
+###########################################
+
+- name: Check if Oracle Full Client is already installed
+  shell:
+    cmd: |
+      export ORACLE_BASE=/opt/treiber/oracle
+      export ORACLE_HOME=$ORACLE_BASE/product/19.0.0/dbhome_1
+      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib:/lib:/usr/lib
+      export TNS_ADMIN=/opt/treiber/oracle/tns_admin
+      export PATH=.:$PATH:$HOME/.local/bin:$HOME/bin:$ORACLE_HOME/OPatch:$ORACLE_HOME/bin
+      sqlplus /nolog <<EOF
+      exit
+      EOF
+  register: sqlplus_output
+  ignore_errors: yes
+
+- name: Run the Oracle install task
+  import_tasks: oraclehub.yml
+  when: |
+    ('sqlplus: not found' in sqlplus_output.stderr) or ('sqlplus: command not found' in sqlplus_output.stderr) or ('sqlplus: error' in sqlplus_output.stderr)

@@ -1,0 +1,233 @@
+- name: Install Oracle Full Client
+  become: yes
+  vars:
+    oracle_technical_user: oracle
+    oracle_technical_user_id: 15000
+    oracle_oinstall_group: oinstall
+    oracle_oinstall_group_id: 15000
+    oracle_base: "/opt/treiber/oracle"
+    oracle_response_file: /opt/treiber/oracle/install/client_install.rsp
+  block:
+
+  - name: Just print a message that Oracle Full Client is still not installed and will be installed
+    vars:
+      install_msg: |
+        ######################################################
+        Oracle Full Client is not installed. Let me do this!!!
+        ######################################################
+    debug:
+      msg: "{{ install_msg.split('\n') }}"
+
+  # Needs to run before installing Oracle Full Client
+  - name: Add group "{{ oracle_oinstall_group }}" if not present
+    group:
+      name: "{{ oracle_oinstall_group }}"
+      gid: "{{ oracle_oinstall_group_id }}"
+      state: present
+
+  - name: Create user "{{ oracle_technical_user }}" if not present
+    user:
+      name: "{{ oracle_technical_user }}"
+      uid: "{{ oracle_technical_user_id }}"
+      groups: "{{ oracle_oinstall_group }}"
+      state: present
+
+  - name: Create folder "{{ oracle_base }}" if not exists with corresponding permissions
+    file:
+      path: "{{ oracle_base }}"
+      state: directory
+      owner: "{{ oracle_technical_user }}"
+      group: "{{ oracle_oinstall_group }}"
+      mode: "0775"
+
+  - name: Create folders for Oracle driver if not exists with corresponding permissions
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ oracle_technical_user }}"
+      group: "{{ oracle_oinstall_group }}"
+      mode: "0775"
+    loop:
+      - "{{ oracle_base }}/product/19.0.0/dbhome_1"
+      - "{{ oracle_base }}/kerberos"
+      - "{{ oracle_base }}/tns_admin"
+      - "{{ oracle_base }}/install"
+
+  - name: Add or replace multiple config files to multiple directories
+    become: yes
+    copy:
+      src: "{{ item.0 }}"
+      dest: "{{ item.1 }}"
+    with_together:
+      - [ "files/oracle_hub/oraclehome.sh",
+          "files/oracle_hub/krb5.conf",
+          "files/oracle_hub/sqlnet.ora",
+          "files/oracle_hub/tnsnames.ora",
+          "files/oracle_hub/client_install.rsp",
+          "files/oracle_hub/cvu_config"] # files
+      - [ "/etc/profile.d/oraclehome.sh",
+          "{{ oracle_base }}/kerberos/krb5.conf",
+          "{{ oracle_base }}/tns_admin/sqlnet.ora",
+          "{{ oracle_base }}/tns_admin/tnsnames.ora",
+          "{{ oracle_base }}/install/client_install.rsp",
+          "{{ oracle_base }}/install/cvu_config"] # directories
+
+  ###########################################
+  # Clean up oraInventory in case the previous installation was broken
+  ###########################################
+  - name: Clean up oraInventory before installation
+    become: yes
+    file:
+      path: "{{ oracle_base }}/oraInventory"
+      state: absent
+
+  - name: Clean up oraInventory (product) before installation
+    become: yes
+    file:
+      path: "{{ oracle_base }}/product/"
+      state: absent
+
+  ###########################################
+  # https://wiki.teambank.de/confluence/display/ITL/Oracle+19c+Client+auf+Ubuntu+Linux+20.04#Oracle19cClientaufUbuntuLinux20.04-Response-File
+  ###########################################
+  - name: Installation of required packages
+    become: yes
+    apt:
+      pkg:
+        - "net-tools"
+        - "unzip"
+        - "gcc"
+        - "make"
+        - "libc6-dev"
+        - "libaio-dev"
+        - "x11-utils"
+        - "xauth"
+      state: present
+      autoremove: yes
+
+  ############################################
+  # START OF: Create some symbolic links (with 'command' because module 'file' does not properly works)
+  # so the Oracle Installer can find all the things it needs
+  # and avoide the errors during linking binaries
+  # for example - [FATAL] Error in invoking target 'install' of makefile '/opt/treiber/oracle/product/19.0.0/dbhome_1/plsql/lib/ins_plsql.mk'.
+  # s. https://wiki.teambank.de/confluence/display/ITL/Oracle+19c+Client+auf+Ubuntu+Linux+20.04#Oracle19cClientaufUbuntuLinux20.04-Response-File
+  ############################################
+  - name: Create symbolic link for Oracle Installer (/bin/bash) with force option
+    become: yes
+    shell: ln -sf /bin/bash /bin/sh
+    ignore_errors: yes
+
+  - name: Create symbolic link for "/usr/lib/x86_64-linux-gnu" and ignore errors if the link/file (not) exists
+    become: yes
+    shell: ln -s  /usr/lib/x86_64-linux-gnu /usr/lib64
+    ignore_errors: yes
+
+  - name: Create symbolic link for "/lib/x86_64-linux-gnu/libgcc_s.so.1" and ignore errors if the link/file (not) exists
+    become: yes
+    shell: ln -s  /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib64/
+    ignore_errors: yes
+
+  - name: Create symbolic link for "/usr/lib/x86_64-linux-gnu/*.o" and ignore errors if the link/file (not) exists
+    become: yes
+    shell: ln -s /usr/lib/x86_64-linux-gnu/*.o /usr/lib64/
+    ignore_errors: yes
+
+  - name: Create symbolic link for "/usr/lib/x86_64-linux-gnu/libpthread.a" and ignore errors if the link/file (not) exists
+    become: yes
+    shell: ln -s /usr/lib/x86_64-linux-gnu/libpthread.a /usr/lib64/libpthread_nonshared.a
+    ignore_errors: yes
+
+  - name: Create symbolic link for "/usr/lib/x86_64-linux-gnu/libc_nonshared.a" and ignore errors if the link/file (not) exists
+    become: yes
+    shell: ln -s /usr/lib/x86_64-linux-gnu/libc_nonshared.a /usr/lib64/
+    ignore_errors: yes
+
+  ###########################################
+  # END OF: Create some symbolic links so the Oracle Installer can find all the things it needs
+  ###########################################
+
+  - name: Check if Response file is already exist
+    stat:
+      path: "{{ oracle_response_file }}"
+    register: response_file
+
+  - name: Interrupt the playbook if Response file is not exist
+    fail:
+      msg: "Check if Response file for Oracle Full Client is not exist, please create one"
+    when: not response_file.stat.exists
+
+  - name: Download Oracle Full Client from Nexus
+    become: yes
+    get_url:
+      url: "https://nexus.prod.oscp.easycredit.intern/repository/analytics-hosted-public-raw/oracle/oracle_full_client_19.3_linux.ubuntu.x64-19.3.zip"
+      dest: "{{ oracle_base }}_full_client_19.3_linux.ubuntu.x64-19.3.zip"
+      owner: "{{ oracle_technical_user }}"
+      group: "{{ oracle_oinstall_group }}"
+      mode: "u=rw,g=r,o=r"
+      validate_certs: false  # Teambank self-signed certificates don't comply with strictly enforced TLSv1.2 Ubuntu 20 policy
+
+  - name: Unzip Oracle Full Client as oracle user
+    become: yes
+    become_user: "{{ oracle_technical_user }}"
+    unarchive:
+      src: "{{ oracle_base }}_full_client_19.3_linux.ubuntu.x64-19.3.zip"
+      dest: "{{ oracle_base }}/install"
+      owner: "{{ oracle_technical_user }}"
+      group: "{{ oracle_oinstall_group }}"
+      mode: "0775"
+      remote_src: yes
+
+  - name: Change cvu_config file (overwrite file if it exists) because of PRVG-0282
+    become: yes
+    copy:
+      src: "{{ oracle_base }}/install/cvu_config"
+      dest: "{{ oracle_base }}/install/client/stage/cvu/cv/admin/cvu_config"
+      owner: "{{ oracle_technical_user }}"
+      group: "{{ oracle_oinstall_group }}"
+      mode: "0775"
+      remote_src: yes
+
+  # START of Oracle Full Client Installation
+  - name: Execute Oracle Full Client installation as oracle user
+    become: yes
+    become_user: "{{ oracle_technical_user }}"
+    shell:
+      chdir: "{{ oracle_base }}/install/client"
+      cmd: "./runInstaller -silent -ignoreSysPrereqs -noconfig -showProgress -waitforcompletion -responseFile {{ oracle_response_file }}"
+    args:
+      warn: false # set warn=false to prevent warning
+    register: oracle_installer_full_output # to see more in pipeline just print oracle_installer_full_output.stdout_lines
+
+  - name: Run a root user script after installation (orainstRoot.sh)
+    become: true
+    shell: "{{ oracle_base }}/oraInventory/orainstRoot.sh"
+    ignore_errors: yes  # if /etc/oraInst.loc already exists, there will be no orainstRoot.sh file
+    args:
+      warn: false # set warn=false to prevent warning
+    register: oracle_root_script_output # to see more in pipeline just print oracle_root_script_output.stdout_lines
+
+  - name: Finalize Oracle Full Client instalaltion (execute Config Tools)
+    become: yes
+    become_user: "{{ oracle_technical_user }}"
+    shell:  "cd {{ oracle_base }}/install/client && ./runInstaller -silent -ignoreSysPrereqs -executeConfigTools -showProgress -waitforcompletion -responseFile {{ oracle_response_file }}"
+    args:
+      warn: false # set warn=false to prevent warning
+    register: oracle_installer_configure_output # to see more in pipeline just print oracle_installer_configure_output.stdout_lines
+
+  # https://github.com/oravirt/ansible-oracle/blob/6a3ae5ed5ccdc61ecc49d8c523c9cb2adc273460/roles/oraswgi_install/tasks/main.yml
+  - name: Change default SQL*Plus PROMPT
+    lineinfile: dest="{{ oracle_base }}/product/19.0.0/dbhome_1/sqlplus/admin/glogin.sql" line='set sqlprompt "_user\'@\'_connect_identifier>"' backup=yes
+  # END of Oracle Full Client Installation
+
+  ###########################################
+  # After discuss with RL: should restore symbolic link for Oracle Installer (/bin/dash) with force option
+  # and with 'command' because module 'file' does not properly works
+  # https://wiki.ubuntuusers.de/Dash/
+  # Dash steht für Debian Almquist Shell. Die Dash ist kleiner und schneller als z.B. die Bash und erfüllt vollständig die POSIX-Spezifikation.
+  # Seit Ubuntu 6.10 ist die Dash die Standard nicht-interaktive Shell von Ubuntu.
+  # Dies wird erreicht, indem /bin/sh ein Symlink auf /bin/dash ist.
+  ###########################################
+  - name: Restore symbolic link for Oracle Installer (/bin/dash) with force option
+    become: yes
+    shell: ln -sf /bin/dash /bin/sh
+    ignore_errors: yes
